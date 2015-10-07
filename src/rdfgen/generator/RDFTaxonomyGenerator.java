@@ -104,15 +104,25 @@ public class RDFTaxonomyGenerator {
 	private void createConcept(TaxonomyConcept currConceptData) {
 		Resource currConcept, parentConcept;
 		Literal prefLabelLiteral, hiddenLabelLiteral;
+		String[] labelParts;
+		String labelLang;
 		
 		currConcept = model.createResource(rootNS + currConceptData.getId());
 		currConcept.addProperty(RDF.type, rootClass);
+		
+		labelParts = currConceptData.getPrefLabel().split("@");
+		if(labelParts.length > 1) labelLang = labelParts[1];
+		else labelLang = lang;
 
-		prefLabelLiteral = model.createLiteral(currConceptData.getPrefLabel(), lang);
+		prefLabelLiteral = model.createLiteral(labelParts[0], labelLang);
 		currConcept.addLiteral(prefLabel, prefLabelLiteral);
-
+		
 		for (String hl : currConceptData.getHiddenLabels()) {
-			hiddenLabelLiteral = model.createLiteral(hl, lang);
+			labelParts = hl.split("@");
+			if(labelParts.length > 1) labelLang = labelParts[1];
+			else labelLang = lang;
+			
+			hiddenLabelLiteral = model.createLiteral(labelParts[0], labelLang);
 			currConcept.addLiteral(hiddenLabel, hiddenLabelLiteral);
 		}
 		
