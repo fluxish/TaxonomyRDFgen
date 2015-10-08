@@ -23,26 +23,44 @@ import org.apache.commons.lang3.text.WordUtils;
 public class TaxonomyConcept implements Data {
 	
 	private String id;
-	private String prefLabel;
+	private List<String> prefLabels;
+	private List<String> altLabels;
 	private List<String> hiddenLabels;
 	private String parentId;
 
 	private TaxonomyConcept(){}
 	
 	public static TaxonomyConcept build(String line){
-		String labelsListStr;
+		String prefLabelsListStr, altLabelsListStr, hiddenLabelsListStr;
+		List<String> prefLabels = new ArrayList<String>();
+		List<String> altLabels = new ArrayList<String>();
+		
 		Pattern linePattern = Pattern.compile(LINE_PATTERN);
 		Matcher matcher = linePattern.matcher(line);
 		TaxonomyConcept concept = null;
-		if (matcher.matches()) {
+		if(matcher.matches()) {
 			concept = new TaxonomyConcept();
 			concept.setParentId(generateIdByLabel(matcher.group(1)));
 			concept.setId(generateIdByLabel(matcher.group(2)));
-			concept.setPrefLabel(StringUtils.capitalize(matcher.group(2)));
 			
-			labelsListStr = matcher.group(3);
-			if(!labelsListStr.isEmpty()){
-				concept.setHiddenLabels(Arrays.asList(labelsListStr.split(";")));
+			prefLabelsListStr = matcher.group(2);
+			for(String prefLabelStr : prefLabelsListStr.split(";")){
+				prefLabels.add(StringUtils.capitalize(prefLabelStr.replaceAll("[^\\p{L}0-9\\@\\ ]", "").trim()));
+			}
+			concept.setPrefLabels(prefLabels);
+			concept.setId(generateIdByLabel(prefLabels.get(0)));
+			
+			altLabelsListStr = matcher.group(3);
+			if(!altLabelsListStr.isEmpty()){
+				for(String altLabelStr : altLabelsListStr.split(";")){
+					altLabels.add(StringUtils.capitalize(altLabelStr.replaceAll("[^\\p{L}0-9\\@\\ ]", "").trim()));
+				}
+			}
+			concept.setAltLabels(altLabels);
+			
+			hiddenLabelsListStr = matcher.group(4);
+			if(!hiddenLabelsListStr.isEmpty()){
+				concept.setHiddenLabels(Arrays.asList(hiddenLabelsListStr.split(";")));
 			} else {
 				concept.setHiddenLabels(new ArrayList<String>());
 			}
@@ -52,7 +70,7 @@ public class TaxonomyConcept implements Data {
 	
 	public static String generateIdByLabel(String label){
 		return Normalizer.normalize(WordUtils.capitalizeFully(label), Normalizer.Form.NFD)
-				.replaceAll("[^A-Za-z0-9]", "");
+				.replaceAll("[^A-Za-z0-9\\_]", "");
 	}
 	
 	public String getId() {
@@ -63,12 +81,20 @@ public class TaxonomyConcept implements Data {
 		this.id = id;
 	}
 
-	public String getPrefLabel() {
-		return prefLabel;
+	public List<String> getPrefLabels() {
+		return prefLabels;
 	}
 
-	private void setPrefLabel(String prefLabel) {
-		this.prefLabel = prefLabel;
+	public List<String> getAltLabels() {
+		return altLabels;
+	}
+
+	public void setAltLabels(List<String> altLabels) {
+		this.altLabels = altLabels;
+	}
+
+	private void setPrefLabels(List<String> prefLabel) {
+		this.prefLabels = prefLabel;
 	}
 
 	public List<String> getHiddenLabels() {
@@ -87,5 +113,5 @@ public class TaxonomyConcept implements Data {
 		this.parentId = parentId;
 	}
 	
-	private static String LINE_PATTERN = "^(.*)#(.*)#(.*)$";
+	private static String LINE_PATTERN = "^(.*)#(.*)#(.*)#(.*)$";
 }

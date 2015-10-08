@@ -3,8 +3,6 @@ package rdfgen.generator;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
-import org.apache.log4j.spi.RootCategory;
-
 import rdfgen.data.TaxonomyConcept;
 import rdfgen.data.TaxonomyStructure;
 import rdfgen.util.Config;
@@ -27,6 +25,7 @@ public class RDFTaxonomyGenerator {
 	private String rdfsNS = "http://www.w3.org/2000/01/rdf-schema#";
 
 	private Property prefLabel;
+	private Property altLabel;
 	private Property hiddenLabel;
 	private Property broader;
 	private Property narrower;
@@ -49,6 +48,7 @@ public class RDFTaxonomyGenerator {
 		model.setNsPrefix("rdfs", rdfsNS);
 
 		prefLabel = model.createProperty(skosNS + "prefLabel");
+		altLabel = model.createProperty(skosNS + "altLabel");
 		hiddenLabel = model.createProperty(skosNS + "hiddenLabel");
 		broader = model.createProperty(skosNS + "broader");
 		narrower = model.createProperty(skosNS + "narrower");
@@ -103,19 +103,30 @@ public class RDFTaxonomyGenerator {
 	
 	private void createConcept(TaxonomyConcept currConceptData) {
 		Resource currConcept, parentConcept;
-		Literal prefLabelLiteral, hiddenLabelLiteral;
+		Literal prefLabelLiteral, altLabelLiteral, hiddenLabelLiteral;
 		String[] labelParts;
 		String labelLang;
 		
 		currConcept = model.createResource(rootNS + currConceptData.getId());
 		currConcept.addProperty(RDF.type, rootClass);
 		
-		labelParts = currConceptData.getPrefLabel().split("@");
-		if(labelParts.length > 1) labelLang = labelParts[1];
-		else labelLang = lang;
-
-		prefLabelLiteral = model.createLiteral(labelParts[0], labelLang);
-		currConcept.addLiteral(prefLabel, prefLabelLiteral);
+		for (String pl : currConceptData.getPrefLabels()) {
+			labelParts = pl.split("@");
+			if(labelParts.length > 1) labelLang = labelParts[1];
+			else labelLang = lang;
+			
+			prefLabelLiteral = model.createLiteral(labelParts[0], labelLang);
+			currConcept.addLiteral(prefLabel, prefLabelLiteral);
+		}
+		
+		for (String al : currConceptData.getAltLabels()) {
+			labelParts = al.split("@");
+			if(labelParts.length > 1) labelLang = labelParts[1];
+			else labelLang = lang;
+			
+			altLabelLiteral = model.createLiteral(labelParts[0], labelLang);
+			currConcept.addLiteral(altLabel, altLabelLiteral);
+		}
 		
 		for (String hl : currConceptData.getHiddenLabels()) {
 			labelParts = hl.split("@");
