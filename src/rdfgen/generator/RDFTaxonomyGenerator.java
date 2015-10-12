@@ -11,7 +11,9 @@ import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
@@ -29,6 +31,7 @@ public class RDFTaxonomyGenerator {
 	private Property hiddenLabel;
 	private Property broader;
 	private Property narrower;
+	private Property related;
 	private Resource skosConcept;
 	private Resource rootClass;
 
@@ -52,6 +55,7 @@ public class RDFTaxonomyGenerator {
 		hiddenLabel = model.createProperty(skosNS + "hiddenLabel");
 		broader = model.createProperty(skosNS + "broader");
 		narrower = model.createProperty(skosNS + "narrower");
+		related = model.createProperty(skosNS + "related");
 		skosConcept = model.createResource(skosNS + "Concept");
 
 		structure = new TaxonomyStructure(fileName);
@@ -135,6 +139,15 @@ public class RDFTaxonomyGenerator {
 			
 			hiddenLabelLiteral = model.createLiteral(labelParts[0], labelLang);
 			currConcept.addLiteral(hiddenLabel, hiddenLabelLiteral);
+		}
+		
+		Resource res;
+		String namespaceRoot = Config.getInstance().getProperty("namespace.root");
+		String resURI;
+		for (String rel : currConceptData.getRelateds()) {
+			resURI = namespaceRoot + rel;
+			res = ResourceFactory.createResource(resURI);
+			currConcept.addProperty(related, res);
 		}
 		
 		parentConcept = model.getResource(rootNS + currConceptData.getParentId());

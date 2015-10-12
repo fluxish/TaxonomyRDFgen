@@ -26,23 +26,28 @@ public class TaxonomyConcept implements Data {
 	private List<String> prefLabels;
 	private List<String> altLabels;
 	private List<String> hiddenLabels;
+	private List<String> relateds;
 	private String parentId;
 
 	private TaxonomyConcept(){}
 	
 	public static TaxonomyConcept build(String line){
-		String prefLabelsListStr, altLabelsListStr, hiddenLabelsListStr;
+		String prefLabelsListStr, altLabelsListStr, hiddenLabelsListStr, relatedStr;
 		List<String> prefLabels = new ArrayList<String>();
 		List<String> altLabels = new ArrayList<String>();
+		List<String> relateds = new ArrayList<String>();
 		
 		Pattern linePattern = Pattern.compile(LINE_PATTERN);
 		Matcher matcher = linePattern.matcher(line);
 		TaxonomyConcept concept = null;
 		if(matcher.matches()) {
 			concept = new TaxonomyConcept();
+			
+			//estrae concetto genitore e crea id
 			concept.setParentId(generateIdByLabel(matcher.group(1)));
 			concept.setId(generateIdByLabel(matcher.group(2)));
 			
+			//estrae prefLabel
 			prefLabelsListStr = matcher.group(2);
 			for(String prefLabelStr : prefLabelsListStr.split(";")){
 				prefLabels.add(StringUtils.capitalize(prefLabelStr.replaceAll("[^\\p{L}0-9\\@\\ ]", "").trim()));
@@ -50,6 +55,7 @@ public class TaxonomyConcept implements Data {
 			concept.setPrefLabels(prefLabels);
 			concept.setId(generateIdByLabel(prefLabels.get(0)));
 			
+			//estrae altLabel
 			altLabelsListStr = matcher.group(3);
 			if(!altLabelsListStr.isEmpty()){
 				for(String altLabelStr : altLabelsListStr.split(";")){
@@ -58,12 +64,29 @@ public class TaxonomyConcept implements Data {
 			}
 			concept.setAltLabels(altLabels);
 			
+			
+			//estrae hiddenLabel
 			hiddenLabelsListStr = matcher.group(4);
 			if(!hiddenLabelsListStr.isEmpty()){
 				concept.setHiddenLabels(Arrays.asList(hiddenLabelsListStr.split(";")));
 			} else {
 				concept.setHiddenLabels(new ArrayList<String>());
 			}
+			
+			//estrae related
+			relatedStr = matcher.group(5);
+			if(!relatedStr.isEmpty()){
+				String[] nsParts, nsStrs = relatedStr.split(";");
+				String ns;
+				for(String nsStr : nsStrs){
+					nsParts = nsStr.split(":");
+					ns = StringUtils.uncapitalize(generateIdByLabel(nsParts[0])) + "#";
+					for(String nsConcept : nsParts[1].split(",")){
+						relateds.add(ns + generateIdByLabel(nsConcept));
+					}
+				}
+			}
+			concept.setRelateds(relateds);
 		}
 		return concept;
 	}
@@ -105,6 +128,14 @@ public class TaxonomyConcept implements Data {
 		this.hiddenLabels = hiddenLabels;
 	}
 
+	public List<String> getRelateds() {
+		return relateds;
+	}
+
+	public void setRelateds(List<String> relateds) {
+		this.relateds = relateds;
+	}
+
 	public String getParentId() {
 		return parentId;
 	}
@@ -113,5 +144,9 @@ public class TaxonomyConcept implements Data {
 		this.parentId = parentId;
 	}
 	
-	private static String LINE_PATTERN = "^(.*)#(.*)#(.*)#(.*)$";
+	/**
+	 * Struttura della linea
+	 * parent#concetto#prefLabels(l1;l2;..)#altLabels(;)#hiddenLabels(;)#related(taxonomy_root1:concept1,...,conceptN;taxonomy_root2...)
+	 */
+	private static String LINE_PATTERN = "^(.*)#(.*)#(.*)#(.*)#(.*)$";
 }
