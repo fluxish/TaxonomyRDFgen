@@ -45,21 +45,25 @@ public class TaxonomyConcept implements Data {
 			
 			//estrae concetto genitore e crea id
 			concept.setParentId(generateIdByLabel(matcher.group(1)));
-			concept.setId(generateIdByLabel(matcher.group(2)));
 			
 			//estrae prefLabel
 			prefLabelsListStr = matcher.group(2);
 			for(String prefLabelStr : prefLabelsListStr.split(";")){
-				prefLabels.add(StringUtils.capitalize(prefLabelStr.replaceAll("[^\\p{L}0-9\\@\\ ]", "").trim()));
+				prefLabels.add(labelize(prefLabelStr));
 			}
 			concept.setPrefLabels(prefLabels);
-			concept.setId(generateIdByLabel(prefLabels.get(0)));
+			
+			if(matcher.group(2).startsWith("_")){
+				concept.setId("_" + generateIdByLabel(prefLabels.get(0)));
+			} else {
+				concept.setId(generateIdByLabel(prefLabels.get(0)));
+			}
 			
 			//estrae altLabel
 			altLabelsListStr = matcher.group(3);
 			if(!altLabelsListStr.isEmpty()){
 				for(String altLabelStr : altLabelsListStr.split(";")){
-					altLabels.add(StringUtils.capitalize(altLabelStr.replaceAll("[^\\p{L}0-9\\@\\ ]", "").trim()));
+					altLabels.add(labelize(altLabelStr));
 				}
 			}
 			concept.setAltLabels(altLabels);
@@ -94,6 +98,10 @@ public class TaxonomyConcept implements Data {
 	public static String generateIdByLabel(String label){
 		return Normalizer.normalize(WordUtils.capitalizeFully(label), Normalizer.Form.NFD)
 				.replaceAll("[^A-Za-z0-9\\_]", "");
+	}
+	
+	public static String labelize(String str){
+		return StringUtils.capitalize(str.replaceAll("[^\\p{L}0-9\\@\\'\\ ]", "").trim());
 	}
 	
 	public String getId() {
