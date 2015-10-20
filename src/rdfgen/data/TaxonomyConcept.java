@@ -96,7 +96,7 @@ public class TaxonomyConcept implements Data {
 	}
 	
 	public static String generateIdByLabel(String label){
-		return Normalizer.normalize(WordUtils.capitalizeFully(label), Normalizer.Form.NFD)
+		return Normalizer.normalize(WordUtils.capitalizeFully(label), Normalizer.Form.NFD).split("@")[0]
 				.replaceAll("[^A-Za-z0-9\\_]", "");
 	}
 	
