@@ -31,7 +31,7 @@ public class TaxonomyConcept implements Data {
 
 	private TaxonomyConcept(){}
 	
-	public static TaxonomyConcept build(String line){
+	public static TaxonomyConcept build(String line) throws Exception{
 		String prefLabelsListStr, altLabelsListStr, hiddenLabelsListStr, relatedStr;
 		List<String> prefLabels = new ArrayList<String>();
 		List<String> altLabels = new ArrayList<String>();
@@ -91,6 +91,9 @@ public class TaxonomyConcept implements Data {
 				}
 			}
 			concept.setRelateds(relateds);
+		}
+		else{
+			throw new Exception("Uncorrect concept line format");
 		}
 		return concept;
 	}
