@@ -11,7 +11,6 @@ import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -23,6 +22,7 @@ public class RDFTaxonomyGenerator {
 
 	private Model model;
 	private String rootNS;
+	private String ldlNS = "http://www.semanticweb.org/ontology/ldl#";
 	private String skosNS = "http://www.w3.org/2004/02/skos/core#";
 	private String rdfsNS = "http://www.w3.org/2000/01/rdf-schema#";
 
@@ -32,6 +32,7 @@ public class RDFTaxonomyGenerator {
 	private Property broader;
 	private Property narrower;
 	private Property related;
+	private Property order;
 	private Resource skosConcept;
 	private Resource rootClass;
 
@@ -57,6 +58,7 @@ public class RDFTaxonomyGenerator {
 		narrower = model.createProperty(skosNS + "narrower");
 		related = model.createProperty(skosNS + "related");
 		skosConcept = model.createResource(skosNS + "Concept");
+		order = model.createProperty(ldlNS + "order"); 
 
 		structure = new TaxonomyStructure(fileName);
 		
@@ -113,6 +115,10 @@ public class RDFTaxonomyGenerator {
 		
 		currConcept = model.createResource(rootNS + currConceptData.getId());
 		currConcept.addProperty(RDF.type, rootClass);
+		
+		if(currConceptData.getOrder() > 0){
+			currConcept.addLiteral(order, currConceptData.getOrder());
+		}
 		
 		for (String pl : currConceptData.getPrefLabels()) {
 			labelParts = pl.split("@");
