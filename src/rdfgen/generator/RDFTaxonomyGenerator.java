@@ -50,6 +50,7 @@ public class RDFTaxonomyGenerator {
 		model = ModelFactory.createDefaultModel();
 		model.setNsPrefix("skos", skosNS);
 		model.setNsPrefix("rdfs", rdfsNS);
+		model.setNsPrefix("ldl", ldlNS);
 
 		prefLabel = model.createProperty(skosNS + "prefLabel");
 		altLabel = model.createProperty(skosNS + "altLabel");
