@@ -18,10 +18,11 @@ import com.hp.hpl.jena.vocabulary.RDF;
 /**
  * Generatore della tassonomia, a partire da una struttura
  */
-public class RDFTaxonomyGenerator implements TaxonomyGenerator {
+public class RDFTaxonomyGenerator {
 
 	private Model model;
 	private String rootNS;
+	private String ldlNS = "http://www.semanticweb.org/ontology/ldl#";
 	private String skosNS = "http://www.w3.org/2004/02/skos/core#";
 	private String rdfsNS = "http://www.w3.org/2000/01/rdf-schema#";
 
@@ -31,6 +32,7 @@ public class RDFTaxonomyGenerator implements TaxonomyGenerator {
 	private Property broader;
 	private Property narrower;
 	private Property related;
+	private Property order;
 	private Resource skosConcept;
 	private Resource rootClass;
 
@@ -48,6 +50,7 @@ public class RDFTaxonomyGenerator implements TaxonomyGenerator {
 		model = ModelFactory.createDefaultModel();
 		model.setNsPrefix("skos", skosNS);
 		model.setNsPrefix("rdfs", rdfsNS);
+		model.setNsPrefix("ldl", ldlNS);
 
 		prefLabel = model.createProperty(skosNS + "prefLabel");
 		altLabel = model.createProperty(skosNS + "altLabel");
@@ -56,6 +59,7 @@ public class RDFTaxonomyGenerator implements TaxonomyGenerator {
 		narrower = model.createProperty(skosNS + "narrower");
 		related = model.createProperty(skosNS + "related");
 		skosConcept = model.createResource(skosNS + "Concept");
+		order = model.createProperty(ldlNS + "order"); 
 
 		structure = new TaxonomyStructure(fileName);
 		
@@ -81,6 +85,13 @@ public class RDFTaxonomyGenerator implements TaxonomyGenerator {
 		structure.close();
 	}
 	
+	public Resource createRootConcept(TaxonomyConcept rootConcept){
+		rootClass = model.createResource(rootNS + rootConcept.getId());
+		Property subClassOf = model.createProperty(rdfsNS + "subClassOf");
+		rootClass.addProperty(subClassOf, skosConcept);
+		return rootClass;
+	}
+	
 	/**
 	 * Salva la tassonomia in un file in formato RDF/XML
 	 * @param fileName nome del file in cui salvare la tassonomia
@@ -97,13 +108,6 @@ public class RDFTaxonomyGenerator implements TaxonomyGenerator {
 		}
 	}
 	
-	private Resource createRootConcept(TaxonomyConcept rootConcept){
-		rootClass = model.createResource(rootNS + rootConcept.getId());
-		Property subClassOf = model.createProperty(rdfsNS + "subClassOf");
-		rootClass.addProperty(subClassOf, skosConcept);
-		return rootClass;
-	}
-	
 	private void createConcept(TaxonomyConcept currConceptData) {
 		Resource currConcept, parentConcept;
 		Literal prefLabelLiteral, altLabelLiteral, hiddenLabelLiteral;
@@ -112,6 +116,10 @@ public class RDFTaxonomyGenerator implements TaxonomyGenerator {
 		
 		currConcept = model.createResource(rootNS + currConceptData.getId());
 		currConcept.addProperty(RDF.type, rootClass);
+		
+		if(currConceptData.getOrder() > 0){
+			currConcept.addLiteral(order, (Integer)currConceptData.getOrder());
+		}
 		
 		for (String pl : currConceptData.getPrefLabels()) {
 			labelParts = pl.split("@");

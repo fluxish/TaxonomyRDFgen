@@ -60,11 +60,7 @@ public class TaxonomyStructure implements Dataset<TaxonomyConcept> {
 		try {
 			String line = br.readLine();
 			if (line != null) {
-				try {
-					currentData = TaxonomyConcept.build(line);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				currentData = TaxonomyConcept.build(line);
 				return currentData;
 			}
 		} catch (IOException e) {

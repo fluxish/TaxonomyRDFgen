@@ -28,10 +28,11 @@ public class TaxonomyConcept implements Data {
 	private List<String> hiddenLabels;
 	private List<String> relateds;
 	private String parentId;
+	private int order;
 
 	private TaxonomyConcept(){}
 	
-	public static TaxonomyConcept build(String line) throws Exception{
+	public static TaxonomyConcept build(String line){
 		String prefLabelsListStr, altLabelsListStr, hiddenLabelsListStr, relatedStr;
 		List<String> prefLabels = new ArrayList<String>();
 		List<String> altLabels = new ArrayList<String>();
@@ -84,16 +85,17 @@ public class TaxonomyConcept implements Data {
 				String ns;
 				for(String nsStr : nsStrs){
 					nsParts = nsStr.split(":");
-					ns = StringUtils.uncapitalize(generateIdByLabel(nsParts[0])) + "#";
-					for(String nsConcept : nsParts[1].split(",")){
-						relateds.add(ns + generateIdByLabel(nsConcept));
+					if(nsParts[0].equals("order")){
+						concept.setOrder(Integer.parseInt(nsParts[1]));
+					} else {
+						ns = StringUtils.uncapitalize(generateIdByLabel(nsParts[0])) + "#";
+						for(String nsConcept : nsParts[1].split(",")){
+							relateds.add(ns + generateIdByLabel(nsConcept));
+						}
 					}
 				}
 			}
 			concept.setRelateds(relateds);
-		}
-		else{
-			throw new Exception("Uncorrect concept line format");
 		}
 		return concept;
 	}
@@ -155,6 +157,14 @@ public class TaxonomyConcept implements Data {
 		this.parentId = parentId;
 	}
 	
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
 	/**
 	 * Struttura della linea
 	 * parent#concetto#prefLabels(l1;l2;..)#altLabels(;)#hiddenLabels(;)#related(taxonomy_root1:concept1,...,conceptN;taxonomy_root2...)

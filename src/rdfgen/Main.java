@@ -1,8 +1,8 @@
 package rdfgen;
 
-import rdfgen.generator.OntTaxonomyGenerator;
+import rdfgen.data.TaxonomyConcept;
+import rdfgen.data.TaxonomyStructure;
 import rdfgen.generator.RDFTaxonomyGenerator;
-import rdfgen.generator.TaxonomyGenerator;
 import rdfgen.util.Config;
 
 public class Main {
@@ -22,13 +22,8 @@ public class Main {
 		
 		for(String fileName : fileNames){
 			rootNS = config.getProperty("namespace.root") + fileName + "#";
-			TaxonomyGenerator generator;
-			if(outputFileEstension.equals(".ttl")){
-				generator = new OntTaxonomyGenerator(inputPath + fileName + inputFileEstension, rootNS);
-			}
-			else {
-				generator = new RDFTaxonomyGenerator(inputPath + fileName + inputFileEstension, rootNS);
-			}
+			RDFTaxonomyGenerator generator = new RDFTaxonomyGenerator(inputPath + fileName + inputFileEstension, rootNS);
+			//OntTaxonomyGenerator generator = new OntTaxonomyGenerator(inputPath + fileName + ".txt", rootNS);
 			generator.generate();
 			generator.write(outputPath + outputFileNamePrefix + fileName + outputFileEstension);
 		}
