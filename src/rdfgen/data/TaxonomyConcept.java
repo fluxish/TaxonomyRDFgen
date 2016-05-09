@@ -29,6 +29,7 @@ public class TaxonomyConcept implements Data {
 	private List<String> relateds;
 	private String parentId;
 	private int order;
+	private String code;
 
 	private TaxonomyConcept(){}
 	
@@ -87,7 +88,11 @@ public class TaxonomyConcept implements Data {
 					nsParts = nsStr.split(":");
 					if(nsParts[0].equals("order")){
 						concept.setOrder(Integer.parseInt(nsParts[1]));
-					} else {
+					}
+					else if(nsParts[0].equals("code")){
+						concept.setCode(nsParts[1]);
+					}
+					else {
 						ns = StringUtils.uncapitalize(generateIdByLabel(nsParts[0])) + "#";
 						for(String nsConcept : nsParts[1].split(",")){
 							relateds.add(ns + generateIdByLabel(nsConcept));
@@ -163,6 +168,14 @@ public class TaxonomyConcept implements Data {
 
 	public void setOrder(int order) {
 		this.order = order;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	/**

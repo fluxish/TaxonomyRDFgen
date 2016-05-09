@@ -33,6 +33,7 @@ public class RDFTaxonomyGenerator {
 	private Property narrower;
 	private Property related;
 	private Property order;
+	private Property code;
 	private Resource skosConcept;
 	private Resource rootClass;
 
@@ -59,7 +60,8 @@ public class RDFTaxonomyGenerator {
 		narrower = model.createProperty(skosNS + "narrower");
 		related = model.createProperty(skosNS + "related");
 		skosConcept = model.createResource(skosNS + "Concept");
-		order = model.createProperty(ldlNS + "order"); 
+		order = model.createProperty(ldlNS + "order");
+		code = model.createProperty(ldlNS + "code"); 
 
 		structure = new TaxonomyStructure(fileName);
 		
@@ -119,6 +121,10 @@ public class RDFTaxonomyGenerator {
 		
 		if(currConceptData.getOrder() > 0){
 			currConcept.addLiteral(order, (Integer)currConceptData.getOrder());
+		}
+		
+		if(currConceptData.getCode() != null){
+			currConcept.addLiteral(code, currConceptData.getCode());
 		}
 		
 		for (String pl : currConceptData.getPrefLabels()) {
